@@ -444,9 +444,9 @@ class WhatsAppAnalyzer:
         ax2.grid(axis='y', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '09_question_frequency.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated question frequency analysis")
+        return self._save_or_return((fig, '09_question_frequency.png'))
     
     def plot_conversation_gaps(self):
         """Analyze longest gaps in conversation"""
