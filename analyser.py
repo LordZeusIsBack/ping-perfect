@@ -14,14 +14,22 @@ plt.rcParams['figure.figsize'] = (12, 6)
 
 
 class WhatsAppAnalyzer:
-    def __init__(self, filepath, output_dir='output'):
-        self.filepath = filepath
+    def __init__(self, filepath_or_buffer, output_dir='output'):
+        self.filepath_or_buffer = filepath_or_buffer
         self.messages = []
         self.df = None
         self.output_dir = output_dir
-        
-        # Create output directory if it doesn't exist
-        os.makedirs(self.output_dir, exist_ok=True)
+        if self.output_dir: os.makedirs(self.output_dir, exist_ok=True)
+
+    def _read_lines(self):
+        """Return list of lines from a path or a file-like object."""
+        if isinstance(self.filepath_or_buffer, str):
+            with open(self.filepath_or_buffer, 'r', encoding='utf-8') as fp: return fp.readlines()
+        if hasattr(self.filepath_or_buffer, 'read'):
+            raw = self.filepath_or_buffer.read()
+            if isinstance(raw, bytes): raw = raw.decode()
+            return raw.splitlines()
+        raise ValueError('filepath_or_buffer must be a path or file-like object')
         
     def parse_chat(self):
         """Parse WhatsApp chat export file"""
