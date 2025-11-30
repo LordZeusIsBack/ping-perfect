@@ -331,9 +331,9 @@ class WhatsAppAnalyzer:
         ax2.grid(axis='x', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '06_double_text_frequency.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated double text analysis")
+        return self._save_or_return(fig, '07_double_text_frequency.png')
     
     def plot_message_length_analysis(self):
         """Analyze message lengths"""
