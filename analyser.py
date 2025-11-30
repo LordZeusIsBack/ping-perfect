@@ -74,6 +74,13 @@ class WhatsAppAnalyzer:
         self.df = pd.DataFrame(self.messages)
         self.df = self.df.sort_values('timestamp').reset_index(drop=True)
         print(f"✓ Parsed {len(self.df)} messages from {len(self.df['sender'].unique())} participants")
+
+    def _save_or_return(self, fig, filename=None):
+        if filename and self.output_dir:
+            out = os.path.join(self.output_dir, filename)
+            fig.savefig(out)
+            print(f"✓ Saved {filename}")
+        return fig
         
     def calculate_response_times(self):
         """Calculate response times between messages"""
@@ -139,10 +146,10 @@ class WhatsAppAnalyzer:
         ax2.grid(True, alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '01_response_time_percentiles.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated response time percentiles chart")
-    
+        return self._save_or_return(fig, '01_response_time_percentiles.png')
+
     def plot_response_time_heatmap(self):
         """Plot response time by hour of day"""
         rt_df = self.calculate_response_times()
