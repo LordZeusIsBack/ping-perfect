@@ -278,10 +278,10 @@ class WhatsAppAnalyzer:
                     ha='center', va='bottom', fontsize=10, fontweight='bold')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '05_conversation_initiators.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated conversation initiators chart")
-    
+        return self._save_or_return(fig, '06_conversation_initiators.png')
+
     def plot_double_text_frequency(self):
         """Analyze double texting (multiple messages before response)"""
         double_texts = []
