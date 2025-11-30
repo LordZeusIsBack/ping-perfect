@@ -446,7 +446,7 @@ class WhatsAppAnalyzer:
         plt.tight_layout()
         fig = plt.gcf()
         print("✓ Generated question frequency analysis")
-        return self._save_or_return((fig, '09_question_frequency.png'))
+        return self._save_or_return(fig, '09_question_frequency.png')
     
     def plot_conversation_gaps(self):
         """Analyze longest gaps in conversation"""
@@ -504,7 +504,7 @@ class WhatsAppAnalyzer:
         plt.tight_layout()
         fig = plt.gcf()
         print("✓ Generated daily streak chart")
-        return self._save_or_return((fig, '11_daily_streak.png'))
+        return self._save_or_return(fig, '11_daily_streak.png')
     
     def generate_summary_stats(self):
         """Generate a summary statistics report"""
@@ -557,11 +557,10 @@ class WhatsAppAnalyzer:
             y_pos -= 0.06
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '00_summary_stats.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated summary statistics")
         
-        return stats
+        return self._save_or_return(fig, '00_summary_stats.png'), stats
     
     def generate_all_visualizations(self):
         """Generate all visualizations"""
