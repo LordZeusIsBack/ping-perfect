@@ -174,10 +174,10 @@ class WhatsAppAnalyzer:
                   ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], rotation=0)
         plt.title('Response Time Heatmap: When Are They Fastest?', fontsize=14, fontweight='bold')
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '02_response_time_heatmap.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated response time heatmap")
-    
+        return self._save_or_return(fig, '02_response_time_heatmap.png')
+
     def plot_message_volume(self):
         """Plot message volume by person"""
         message_counts = self.df['sender'].value_counts()
