@@ -206,10 +206,10 @@ class WhatsAppAnalyzer:
         ax2.set_title('Message Share', fontsize=14, fontweight='bold')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '03_message_volume.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated message volume chart")
-    
+        return self._save_or_return(fig, '03_message_volume.png')
+
     def plot_activity_patterns(self):
         """Plot activity by hour and day"""
         self.df['hour'] = self.df['timestamp'].dt.hour
