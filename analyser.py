@@ -502,9 +502,9 @@ class WhatsAppAnalyzer:
         plt.xticks(rotation=45, ha='right')
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '11_daily_streak.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated daily streak chart")
+        return self._save_or_return((fig, '11_daily_streak.png'))
     
     def generate_summary_stats(self):
         """Generate a summary statistics report"""
