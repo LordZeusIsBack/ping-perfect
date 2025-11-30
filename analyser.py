@@ -247,7 +247,7 @@ class WhatsAppAnalyzer:
         plt.tight_layout()
         fig = plt.gcf()
         print("✓ Generated activity patterns chart")
-        return self._save_or_return(fig, '05_activity_patterns.png')
+        return self._save_or_return(fig, '04_activity_patterns.png')
 
     def plot_conversation_initiators(self):
         """Who starts conversations more?"""
@@ -280,7 +280,7 @@ class WhatsAppAnalyzer:
         plt.tight_layout()
         fig = plt.gcf()
         print("✓ Generated conversation initiators chart")
-        return self._save_or_return(fig, '06_conversation_initiators.png')
+        return self._save_or_return(fig, '05_conversation_initiators.png')
 
     def plot_double_text_frequency(self):
         """Analyze double texting (multiple messages before response)"""
@@ -333,7 +333,7 @@ class WhatsAppAnalyzer:
         plt.tight_layout()
         fig = plt.gcf()
         print("✓ Generated double text analysis")
-        return self._save_or_return(fig, '07_double_text_frequency.png')
+        return self._save_or_return(fig, '06_double_text_frequency.png')
     
     def plot_message_length_analysis(self):
         """Analyze message lengths"""
@@ -368,9 +368,9 @@ class WhatsAppAnalyzer:
             ax2.text(val, i, f' {val:.0f}', va='center', fontsize=9)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '07_message_length_analysis.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated message length analysis")
+        return self._save_or_return(fig, '07_message_length_analysis.png')
     
     def plot_emoji_analysis(self):
         """Analyze emoji usage"""
