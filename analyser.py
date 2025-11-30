@@ -245,10 +245,10 @@ class WhatsAppAnalyzer:
         ax2.grid(axis='y', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '04_activity_patterns.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated activity patterns chart")
-    
+        return self._save_or_return(fig, '05_activity_patterns.png')
+
     def plot_conversation_initiators(self):
         """Who starts conversations more?"""
         self.df['time_gap'] = self.df['timestamp'].diff().dt.total_seconds() / 3600  # hours
