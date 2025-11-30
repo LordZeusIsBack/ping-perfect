@@ -472,9 +472,9 @@ class WhatsAppAnalyzer:
             plt.text(val, i, f' {label}', va='center', fontsize=9)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '10_conversation_gaps.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated conversation gaps analysis")
+        return self._save_or_return(fig, '10_conversation_gaps.png')
     
     def plot_daily_streak(self):
         """Calculate daily messaging streak"""
