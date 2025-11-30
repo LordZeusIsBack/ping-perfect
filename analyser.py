@@ -413,9 +413,9 @@ class WhatsAppAnalyzer:
                 axes[idx].grid(axis='x', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '08_emoji_analysis.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated emoji analysis")
+        return self._save_or_return(fig, '08_emoji_analysis.png')
     
     def plot_question_frequency(self):
         """Analyze who asks more questions"""
