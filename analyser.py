@@ -39,8 +39,7 @@ class WhatsAppAnalyzer:
             r'(\[\d{1,2}/\d{1,2}/\d{2,4},?\s+\d{1,2}:\d{2}:\d{2}\s*(?:AM|PM|am|pm)?\])\s*([^:]+?):\s*(.*)',
         ]
         
-        with open(self.filepath, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
+        lines = self._read_lines()
         
         for line in lines:
             matched = False
@@ -53,14 +52,13 @@ class WhatsAppAnalyzer:
                     
                     # Try different timestamp formats
                     timestamp = None
-                    for fmt in ['%m/%d/%y, %I:%M %p', '%d/%m/%Y, %H:%M', 
-                               '%m/%d/%Y, %I:%M %p', '%d/%m/%y, %H:%M',
-                               '%m/%d/%y, %H:%M', '%d/%m/%Y, %H:%M:%S']:
+                    for fmt in ['%m/%d/%y, %I:%M %p', '%d/%m/%Y, %H:%M',
+                                '%m/%d/%Y, %I:%M %p', '%d/%m/%y, %H:%M',
+                                '%m/%d/%y, %H:%M', '%d/%m/%Y, %H:%M:%S']:
                         try:
                             timestamp = datetime.strptime(timestamp_str, fmt)
                             break
-                        except ValueError:
-                            continue
+                        except ValueError: continue
                     
                     if timestamp:
                         self.messages.append({
@@ -71,8 +69,7 @@ class WhatsAppAnalyzer:
                         matched = True
                         break
         
-        if not self.messages:
-            raise ValueError("No messages found. Please check the chat export format.")
+        if not self.messages: raise ValueError("No messages found. Please check the chat export format.")
         
         self.df = pd.DataFrame(self.messages)
         self.df = self.df.sort_values('timestamp').reset_index(drop=True)
