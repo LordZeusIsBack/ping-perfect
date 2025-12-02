@@ -51,11 +51,11 @@ Upload your WhatsApp `.txt` file → get instant analytics in your browser.
 ```bash
 pip install -r requirements.txt
 streamlit run streamlit_app/app.py
-````
+```
 
 Then open:
 
-```
+```text
 http://localhost:8501
 ```
 
