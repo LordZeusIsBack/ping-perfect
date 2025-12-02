@@ -14,14 +14,22 @@ plt.rcParams['figure.figsize'] = (12, 6)
 
 
 class WhatsAppAnalyzer:
-    def __init__(self, filepath, output_dir='output'):
-        self.filepath = filepath
+    def __init__(self, filepath_or_buffer, output_dir='output'):
+        self.filepath_or_buffer = filepath_or_buffer
         self.messages = []
         self.df = None
         self.output_dir = output_dir
-        
-        # Create output directory if it doesn't exist
-        os.makedirs(self.output_dir, exist_ok=True)
+        if self.output_dir: os.makedirs(self.output_dir, exist_ok=True)
+
+    def _read_lines(self):
+        """Return list of lines from a path or a file-like object."""
+        if isinstance(self.filepath_or_buffer, str):
+            with open(self.filepath_or_buffer, 'r', encoding='utf-8') as fp: return fp.readlines()
+        if hasattr(self.filepath_or_buffer, 'read'):
+            raw = self.filepath_or_buffer.read()
+            if isinstance(raw, bytes): raw = raw.decode()
+            return raw.splitlines()
+        raise ValueError('filepath_or_buffer must be a path or file-like object')
         
     def parse_chat(self):
         """Parse WhatsApp chat export file"""
@@ -31,8 +39,7 @@ class WhatsAppAnalyzer:
             r'(\[\d{1,2}/\d{1,2}/\d{2,4},?\s+\d{1,2}:\d{2}:\d{2}\s*(?:AM|PM|am|pm)?\])\s*([^:]+?):\s*(.*)',
         ]
         
-        with open(self.filepath, 'r', encoding='utf-8') as file:
-            lines = file.readlines()
+        lines = self._read_lines()
         
         for line in lines:
             matched = False
@@ -45,14 +52,13 @@ class WhatsAppAnalyzer:
                     
                     # Try different timestamp formats
                     timestamp = None
-                    for fmt in ['%m/%d/%y, %I:%M %p', '%d/%m/%Y, %H:%M', 
-                               '%m/%d/%Y, %I:%M %p', '%d/%m/%y, %H:%M',
-                               '%m/%d/%y, %H:%M', '%d/%m/%Y, %H:%M:%S']:
+                    for fmt in ['%m/%d/%y, %I:%M %p', '%d/%m/%Y, %H:%M',
+                                '%m/%d/%Y, %I:%M %p', '%d/%m/%y, %H:%M',
+                                '%m/%d/%y, %H:%M', '%d/%m/%Y, %H:%M:%S']:
                         try:
                             timestamp = datetime.strptime(timestamp_str, fmt)
                             break
-                        except ValueError:
-                            continue
+                        except ValueError: continue
                     
                     if timestamp:
                         self.messages.append({
@@ -63,12 +69,18 @@ class WhatsAppAnalyzer:
                         matched = True
                         break
         
-        if not self.messages:
-            raise ValueError("No messages found. Please check the chat export format.")
+        if not self.messages: raise ValueError("No messages found. Please check the chat export format.")
         
         self.df = pd.DataFrame(self.messages)
         self.df = self.df.sort_values('timestamp').reset_index(drop=True)
         print(f"✓ Parsed {len(self.df)} messages from {len(self.df['sender'].unique())} participants")
+
+    def _save_or_return(self, fig, filename=None):
+        if filename and self.output_dir:
+            out = os.path.join(self.output_dir, filename)
+            fig.savefig(out)
+            print(f"✓ Saved {filename}")
+        return fig
         
     def calculate_response_times(self):
         """Calculate response times between messages"""
@@ -134,10 +146,10 @@ class WhatsAppAnalyzer:
         ax2.grid(True, alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '01_response_time_percentiles.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated response time percentiles chart")
-    
+        return self._save_or_return(fig, '01_response_time_percentiles.png')
+
     def plot_response_time_heatmap(self):
         """Plot response time by hour of day"""
         rt_df = self.calculate_response_times()
@@ -162,10 +174,10 @@ class WhatsAppAnalyzer:
                   ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], rotation=0)
         plt.title('Response Time Heatmap: When Are They Fastest?', fontsize=14, fontweight='bold')
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '02_response_time_heatmap.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated response time heatmap")
-    
+        return self._save_or_return(fig, '02_response_time_heatmap.png')
+
     def plot_message_volume(self):
         """Plot message volume by person"""
         message_counts = self.df['sender'].value_counts()
@@ -194,10 +206,10 @@ class WhatsAppAnalyzer:
         ax2.set_title('Message Share', fontsize=14, fontweight='bold')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '03_message_volume.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated message volume chart")
-    
+        return self._save_or_return(fig, '03_message_volume.png')
+
     def plot_activity_patterns(self):
         """Plot activity by hour and day"""
         self.df['hour'] = self.df['timestamp'].dt.hour
@@ -233,10 +245,10 @@ class WhatsAppAnalyzer:
         ax2.grid(axis='y', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '04_activity_patterns.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated activity patterns chart")
-    
+        return self._save_or_return(fig, '04_activity_patterns.png')
+
     def plot_conversation_initiators(self):
         """Who starts conversations more?"""
         self.df['time_gap'] = self.df['timestamp'].diff().dt.total_seconds() / 3600  # hours
@@ -266,10 +278,10 @@ class WhatsAppAnalyzer:
                     ha='center', va='bottom', fontsize=10, fontweight='bold')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '05_conversation_initiators.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated conversation initiators chart")
-    
+        return self._save_or_return(fig, '05_conversation_initiators.png')
+
     def plot_double_text_frequency(self):
         """Analyze double texting (multiple messages before response)"""
         double_texts = []
@@ -319,9 +331,9 @@ class WhatsAppAnalyzer:
         ax2.grid(axis='x', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '06_double_text_frequency.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated double text analysis")
+        return self._save_or_return(fig, '06_double_text_frequency.png')
     
     def plot_message_length_analysis(self):
         """Analyze message lengths"""
@@ -356,9 +368,9 @@ class WhatsAppAnalyzer:
             ax2.text(val, i, f' {val:.0f}', va='center', fontsize=9)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '07_message_length_analysis.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated message length analysis")
+        return self._save_or_return(fig, '07_message_length_analysis.png')
     
     def plot_emoji_analysis(self):
         """Analyze emoji usage"""
@@ -401,9 +413,9 @@ class WhatsAppAnalyzer:
                 axes[idx].grid(axis='x', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '08_emoji_analysis.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated emoji analysis")
+        return self._save_or_return(fig, '08_emoji_analysis.png')
     
     def plot_question_frequency(self):
         """Analyze who asks more questions"""
@@ -432,9 +444,9 @@ class WhatsAppAnalyzer:
         ax2.grid(axis='y', alpha=0.3)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '09_question_frequency.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated question frequency analysis")
+        return self._save_or_return(fig, '09_question_frequency.png')
     
     def plot_conversation_gaps(self):
         """Analyze longest gaps in conversation"""
@@ -460,9 +472,9 @@ class WhatsAppAnalyzer:
             plt.text(val, i, f' {label}', va='center', fontsize=9)
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '10_conversation_gaps.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated conversation gaps analysis")
+        return self._save_or_return(fig, '10_conversation_gaps.png')
     
     def plot_daily_streak(self):
         """Calculate daily messaging streak"""
@@ -490,9 +502,9 @@ class WhatsAppAnalyzer:
         plt.xticks(rotation=45, ha='right')
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '11_daily_streak.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated daily streak chart")
+        return self._save_or_return(fig, '11_daily_streak.png')
     
     def generate_summary_stats(self):
         """Generate a summary statistics report"""
@@ -545,11 +557,10 @@ class WhatsAppAnalyzer:
             y_pos -= 0.06
         
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dir, '00_summary_stats.png'), dpi=300, bbox_inches='tight')
-        plt.close()
+        fig = plt.gcf()
         print("✓ Generated summary statistics")
         
-        return stats
+        return self._save_or_return(fig, '00_summary_stats.png'), stats
     
     def generate_all_visualizations(self):
         """Generate all visualizations"""

@@ -209,3 +209,5 @@ __marimo__/
 # output files
 output/
 chat.txt
+
+.idea/
